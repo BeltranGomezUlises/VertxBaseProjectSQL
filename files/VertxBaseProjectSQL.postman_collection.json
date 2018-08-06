@@ -1,0 +1,307 @@
+{
+	"info": {
+		"_postman_id": "337c09b7-1c71-4e76-9045-fff8caa4cfaf",
+		"name": "VertxBaseProjectSQL",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"_postman_id": "92736016-bd35-4b65-8f76-cc09b548fa60",
+			"name": "/persons",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjoxLFwic3VjdXJzYWxJZFwiOjF9In0.drlDxDc8qHbzJkwxVS5NVehbiRXFykWKrGIEfABp4jdpbWbQcllAKyD2XSmF-RqAht5B_Z-OhXiiBtiYFnoxRw"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "localhost:8480/persons",
+					"host": [
+						"localhost"
+					],
+					"port": "8480",
+					"path": [
+						"persons"
+					]
+				},
+				"description": "crud example"
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "a409e992-c7f5-4a1d-b4d1-aa1118a8ceed",
+			"name": "/persons",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjoxLFwic3VjdXJzYWxJZFwiOjF9In0.drlDxDc8qHbzJkwxVS5NVehbiRXFykWKrGIEfABp4jdpbWbQcllAKyD2XSmF-RqAht5B_Z-OhXiiBtiYFnoxRw"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\":\"person\",\n\t\"email\":\"myemail@mail.com\",\n\t\"phone\":\"6672118468\"\n}"
+				},
+				"url": {
+					"raw": "localhost:8480/persons",
+					"host": [
+						"localhost"
+					],
+					"port": "8480",
+					"path": [
+						"persons"
+					]
+				},
+				"description": "crud example"
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "02078f34-08b2-45a2-bdea-f9f089944cb3",
+			"name": "/persons",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjoxLFwic3VjdXJzYWxJZFwiOjF9In0.drlDxDc8qHbzJkwxVS5NVehbiRXFykWKrGIEfABp4jdpbWbQcllAKyD2XSmF-RqAht5B_Z-OhXiiBtiYFnoxRw"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "localhost:8480/persons/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8480",
+					"path": [
+						"persons",
+						"1"
+					]
+				},
+				"description": "crud example"
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "341e9fee-44bc-4a6d-9566-150a475a6b26",
+			"name": "/persons",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjoxLFwic3VjdXJzYWxJZFwiOjF9In0.drlDxDc8qHbzJkwxVS5NVehbiRXFykWKrGIEfABp4jdpbWbQcllAKyD2XSmF-RqAht5B_Z-OhXiiBtiYFnoxRw"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"id\":2,\n\t\"name\":\"person\"\n}"
+				},
+				"url": {
+					"raw": "localhost:8480/persons",
+					"host": [
+						"localhost"
+					],
+					"port": "8480",
+					"path": [
+						"persons"
+					]
+				},
+				"description": "crud example"
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "56af1826-f7c0-4d3c-b3f8-db46c95a70fc",
+			"name": "/persons?query",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjoxLFwic3VjdXJzYWxJZFwiOjF9In0.drlDxDc8qHbzJkwxVS5NVehbiRXFykWKrGIEfABp4jdpbWbQcllAKyD2XSmF-RqAht5B_Z-OhXiiBtiYFnoxRw"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "localhost:8480/persons?query=id,name,phone",
+					"host": [
+						"localhost"
+					],
+					"port": "8480",
+					"path": [
+						"persons"
+					],
+					"query": [
+						{
+							"key": "query",
+							"value": "id,name,phone"
+						}
+					]
+				},
+				"description": "crud example"
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "7e2117fc-9414-4987-b111-5d8186410a8e",
+			"name": "/persons?query&from&to",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjoxLFwic3VjdXJzYWxJZFwiOjF9In0.drlDxDc8qHbzJkwxVS5NVehbiRXFykWKrGIEfABp4jdpbWbQcllAKyD2XSmF-RqAht5B_Z-OhXiiBtiYFnoxRw"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "localhost:8480/persons?query=id,name,phone&from=0&to=9",
+					"host": [
+						"localhost"
+					],
+					"port": "8480",
+					"path": [
+						"persons"
+					],
+					"query": [
+						{
+							"key": "query",
+							"value": "id,name,phone"
+						},
+						{
+							"key": "from",
+							"value": "0"
+						},
+						{
+							"key": "to",
+							"value": "9"
+						}
+					]
+				},
+				"description": "crud example"
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "c67044c7-c742-422a-9690-1efe77c0a8c0",
+			"name": "/pets",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjoxLFwic3VjdXJzYWxJZFwiOjF9In0.drlDxDc8qHbzJkwxVS5NVehbiRXFykWKrGIEfABp4jdpbWbQcllAKyD2XSmF-RqAht5B_Z-OhXiiBtiYFnoxRw"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\":\"my pet\",\n\t\"person_id\":2\n}"
+				},
+				"url": {
+					"raw": "localhost:8480/pets",
+					"host": [
+						"localhost"
+					],
+					"port": "8480",
+					"path": [
+						"pets"
+					]
+				},
+				"description": "crud example"
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "61de3d1c-9c40-4caf-8cb3-8ef723c0c675",
+			"name": "/pets?query",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjoxLFwic3VjdXJzYWxJZFwiOjF9In0.drlDxDc8qHbzJkwxVS5NVehbiRXFykWKrGIEfABp4jdpbWbQcllAKyD2XSmF-RqAht5B_Z-OhXiiBtiYFnoxRw"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\":\"my pet\",\n\t\"person_id\":2\n}"
+				},
+				"url": {
+					"raw": "localhost:8480/pets?query=id,name,person.id,person.name,person.phone",
+					"host": [
+						"localhost"
+					],
+					"port": "8480",
+					"path": [
+						"pets"
+					],
+					"query": [
+						{
+							"key": "query",
+							"value": "id,name,person.id,person.name,person.phone"
+						}
+					]
+				},
+				"description": "crud example"
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "740519be-47ae-417e-8b17-fbaa33e434af",
+			"name": "/person/action/register",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjoxLFwic3VjdXJzYWxJZFwiOjF9In0.drlDxDc8qHbzJkwxVS5NVehbiRXFykWKrGIEfABp4jdpbWbQcllAKyD2XSmF-RqAht5B_Z-OhXiiBtiYFnoxRw"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\":\"person\",\n\t\"email\":\"myemail@mail.com\",\n\t\"phone\":\"6672118468\",\n\t\"pets\":[\n\t\t{\n\t\t\t\"name\":\"firulais\"\n\t\t},\n\t\t{\n\t\t\t\"name\":\"otro firulis\"\n\t\t},\n\t\t{\n\t\t\t\"name\":\"ultimo firulais\"\n\t\t}\n\t]\n}"
+				},
+				"url": {
+					"raw": "localhost:8480/persons/action/register",
+					"host": [
+						"localhost"
+					],
+					"port": "8480",
+					"path": [
+						"persons",
+						"action",
+						"register"
+					]
+				},
+				"description": "crud example"
+			},
+			"response": []
+		}
+	]
+}
