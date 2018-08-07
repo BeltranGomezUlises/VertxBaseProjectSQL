@@ -7,7 +7,6 @@ package database.commons;
 
 import static database.commons.Action.FIND_ALL;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.DeliveryOptions;
