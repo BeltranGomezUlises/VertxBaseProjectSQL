@@ -10,19 +10,25 @@ import database.commons.ErrorCodes;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import java.util.Date;
+import models.ModelReponse;
+import static models.ModelReponse.Status.OK;
 import models.PropertyError;
 import static service.commons.Constants.*;
 import utils.UtilsDate;
 import utils.UtilsJWT;
+import utils.UtilsResponse;
 import static utils.UtilsResponse.*;
 import utils.UtilsRouter;
 import utils.UtilsValidation;
@@ -351,4 +357,67 @@ public abstract class ServiceVerticle extends AbstractVerticle {
         return true;
     }
 
+    
+    /**
+     * Generic response to avoid boilerplate
+     *
+     * @param context context to reply
+     * @param reply reply from the async result
+     */
+    protected void genericResponse(RoutingContext context, AsyncResult<Message<Object>> reply) {
+        if (reply.succeeded()) {
+            ModelReponse res = new ModelReponse(OK);
+            res.setData(reply.result().body());
+            HttpServerResponse response = context.response();
+            response.putHeader("Content-Type", "application/json");
+            response.end(Json.encode(res));
+        } else {
+            responseError(context, UNEXPECTED_ERROR, reply.cause().getMessage());
+        }
+    }
+
+    /**
+     * Generic response to avoid boilerplate
+     *
+     * @param context context to reply
+     * @param reply reply from the async result
+     */
+    protected void genericResponse(RoutingContext context, AsyncResult<Message<Object>> reply, String message) {
+        if (reply.succeeded()) {
+            ModelReponse res = new ModelReponse(OK);
+            res.setData(reply.result().body());
+            res.setMessage(message);
+            HttpServerResponse response = context.response();
+            response.putHeader("Content-Type", "application/json");
+            response.end(Json.encode(res));
+        } else {
+            responseError(context, UNEXPECTED_ERROR, reply.cause().getMessage());
+        }
+    }
+
+    /**
+     * Validates is the access token in the header Authorization is still valid
+     *
+     * @param context context from the http request
+     * @param handler handler to procced if access token is valid
+     */
+    protected void validateToken(RoutingContext context, Handler<Void> handler) {
+        String token = context.request().headers().get(AUTHORIZATION);
+        if (UtilsJWT.isTokenValid(token)) {
+            handler.handle(null);
+        } else {
+            UtilsResponse.responseInvalidToken(context);
+        }
+    }
+
+    /**
+     * creates a generic DeliveryOptions with a header ACTION
+     *
+     * @param action action to add as header in ACTION key
+     * @return a new DeliveryOptions instance
+     */
+    protected DeliveryOptions options(String action) {
+        return new DeliveryOptions().addHeader(ACTION, action);
+    }
+    
 }

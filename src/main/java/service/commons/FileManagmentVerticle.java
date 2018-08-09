@@ -5,7 +5,6 @@
  */
 package service.commons;
 
-import io.netty.handler.codec.http.HttpResponse;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
