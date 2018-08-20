@@ -65,6 +65,7 @@ public abstract class ServiceVerticle extends AbstractVerticle {
     public void start(Future<Void> startFuture) throws Exception {
         HttpServer server = vertx.createHttpServer();
         router.get("/").handler(this::findAll);
+        router.get("/v2").handler(this::findAllV2);
         router.get("/:id").handler(this::findById);
         router.get("/count").handler(this::count);
         router.get("/count/perPage/:num").handler(this::countPerPage);
@@ -106,15 +107,37 @@ public abstract class ServiceVerticle extends AbstractVerticle {
                     .put("to", context.request().getParam("to"));
             DeliveryOptions options = new DeliveryOptions().addHeader(ACTION, FIND_ALL.name());
             vertx.eventBus().send(this.getDBAddress(), message, options, reply -> {
-                if (reply.succeeded()) {
-                    responseOk(context, reply.result().body(), "Found");
-                } else {
-                    responseError(context, UNEXPECTED_ERROR, reply.cause().getMessage());
-                }
+                this.genericResponse(context, reply, "Found");
             });
         } else {
             responseInvalidToken(context);
         }
+    }
+
+    /**
+     * Sends a message to the verticle registered with DBAddress especified in
+     * this instance the action of "findAll"
+     *
+     * @param context the routing context running in the request
+     */
+    protected void findAllV2(RoutingContext context) {
+        this.validateToken(context, userId -> {
+            JsonObject message = new JsonObject()
+                    .put("select", context.request().getParam("select"))
+                    .put("specialJoin", context.request().getParam("specialJoin"))
+                    .put("where", context.request().getParam("where"))
+                    .put("joinType", context.request().getParam("joinType"))
+                    .put("from", context.request().getParam("from"))
+                    .put("to", context.request().getParam("to"));
+            vertx.eventBus().send(
+                    this.getDBAddress(),
+                    message,
+                    options(FIND_ALL_V2.name()),
+                    reply -> {
+                        this.genericResponse(context, reply, "Found");
+                    });
+        });
+
     }
 
     /**
@@ -129,11 +152,7 @@ public abstract class ServiceVerticle extends AbstractVerticle {
             JsonObject message = new JsonObject().put("id", Integer.valueOf(context.request().getParam("id")));
             DeliveryOptions options = new DeliveryOptions().addHeader(ACTION, FIND_BY_ID.name());
             vertx.eventBus().send(this.getDBAddress(), message, options, reply -> {
-                if (reply.succeeded()) {
-                    responseOk(context, reply.result().body(), "Found");
-                } else {
-                    responseError(context, UNEXPECTED_ERROR, reply.cause().getMessage());
-                }
+                this.genericResponse(context, reply, "Found");
             });
         } else {
             responseInvalidToken(context);
@@ -357,7 +376,6 @@ public abstract class ServiceVerticle extends AbstractVerticle {
         return true;
     }
 
-    
     /**
      * Generic response to avoid boilerplate
      *
@@ -419,5 +437,5 @@ public abstract class ServiceVerticle extends AbstractVerticle {
     protected DeliveryOptions options(String action) {
         return new DeliveryOptions().addHeader(ACTION, action);
     }
-    
+
 }

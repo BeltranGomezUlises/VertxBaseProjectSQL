@@ -1,6 +1,7 @@
 package main;
 
 import database.commons.*;
+import database.examples.FamiliarDBV;
 import database.examples.PersonDBV;
 import database.examples.PetDBV;
 import io.vertx.core.AbstractVerticle;
@@ -15,6 +16,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.function.Function;
 import service.commons.*;
+import service.examples.FamiliarSV;
 import service.examples.PersonSV;
 import service.examples.PetSV;
 import utils.UtilsRouter;
@@ -28,7 +30,7 @@ public class MainVerticle extends AbstractVerticle {
 
     private static final String CONFIG_FILE_PATH = "./config.json";
 
-    private String configFilePath;
+    private final String configFilePath;
 
     public MainVerticle(String configFilePath) {
         this.configFilePath = configFilePath;
@@ -56,6 +58,7 @@ public class MainVerticle extends AbstractVerticle {
         //run verticles
         initializeVerticle(new PersonDBV(), new PersonSV(), config);
         initializeVerticle(new PetDBV(), new PetSV(), config);
+        initializeVerticle(new FamiliarDBV(), new FamiliarSV(), config);
     }
 
     /**
@@ -133,7 +136,12 @@ public class MainVerticle extends AbstractVerticle {
                     .put("driver_class", "com.mysql.jdbc.Driver")
                     .put("user", "mysql")
                     .put("password", "2424")
-                    .put("max_pool_size", 50)
+                    .put("max_pool_size", 15) //the maximum number of connections to pool - default is 15         
+                    .put("min_pool_size", 3) //the number of connections to initialise the pool with - default is 3
+                    .put("initial_pool_size", 3) //the minimum number of connections to pool
+                    .put("max_statements", 3) //the maximum number of prepared statements to cache - default is 0
+                    .put("max_statements_per_connection", 0) //the maximum number of prepared statements to cache per connection - default is 0                   
+                    .put("max_idle_time", 7200) //number of seconds after which an idle connection will be closed - default is 0 (never expire)
                     .put(Constants.CONFIG_HTTP_SERVER_PORT, 8480); //se default configs
         }
         System.out.println(Json.encodePrettily(result));

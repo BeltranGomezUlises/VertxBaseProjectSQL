@@ -22,7 +22,7 @@ import models.ModelSesion;
  */
 public class UtilsJWT {
 
-    private static final String STRING_KEY = "LLAVE ULTRA SECRETA";
+    private static final String STRING_KEY = "k$5*t;ht^L$_g76k'H6LSas\"n`6xrE=)?)+g!~0r198(\"D^|Hl'~+SvuMm'P_([";
 
     public static String generateSessionToken(final int userId, final int branchofficeId) throws JsonProcessingException {
         JwtBuilder builder = Jwts.builder();
@@ -31,13 +31,12 @@ public class UtilsJWT {
         return builder.signWith(SignatureAlgorithm.HS512, STRING_KEY).compact();
     }
 
-    public static Integer getUserIdFrom(String token) {
-        ModelSesion sesion = Json.decodeValue(Jwts.parser()
+    public static int getUserIdFrom(String token) {
+        return Integer.valueOf(Jwts.parser()
                 .setSigningKey(STRING_KEY)
                 .parseClaimsJws(token)
                 .getBody()
-                .getSubject(), ModelSesion.class);
-        return sesion.getUserId();
+                .getSubject());
     }
 
     public static boolean isTokenValid(String token) {
