@@ -20,10 +20,6 @@ public enum Action {
      */
     FIND_ALL,
     /**
-     * represents the action of find all the entities in the data base
-     */
-    FIND_ALL_V2,
-    /**
      * represents the action of create an entity
      */
     CREATE,

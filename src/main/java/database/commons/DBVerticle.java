@@ -21,7 +21,6 @@ import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.SQLOptions;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -56,7 +55,12 @@ public abstract class DBVerticle extends AbstractVerticle {
                 .put("driver_class", config().getString("driver_class"))
                 .put("user", config().getString("user"))
                 .put("password", config().getString("password"))
-                .put("max_pool_size", config().getInteger("max_pool_size"));
+                .put("max_pool_size", config().getInteger("max_pool_size"))
+                .put("min_pool_size", config().getInteger("min_pool_size"))
+                .put("initial_pool_size", config().getInteger("initial_pool_size"))
+                .put("max_statements", config().getInteger("max_statements"))
+                .put("max_statements_per_connection", config().getInteger("max_statements_per_connection"))
+                .put("max_idle_time", config().getInteger("max_idle_time"));
 
         dbClient = JDBCClient.createShared(vertx, conf);
 
@@ -73,8 +77,7 @@ public abstract class DBVerticle extends AbstractVerticle {
     }
 
     /**
-     * This method takes the action of the message and execute the method that
-     * corresponds
+     * This method takes the action of the message and execute the method that corresponds
      *
      * @param message the message from the event bus
      */
@@ -94,9 +97,6 @@ public abstract class DBVerticle extends AbstractVerticle {
                         break;
                     case FIND_ALL:
                         this.findAll(message);
-                        break;
-                    case FIND_ALL_V2:
-                        this.findAllV2(message);
                         break;
                     case UPDATE:
                         this.update(message);
@@ -186,49 +186,18 @@ public abstract class DBVerticle extends AbstractVerticle {
     }
 
     /**
-     * Execute the query "select * from"
-     *
-     * @param message message from the event bus
-     */
-    protected void findAll(Message<JsonObject> message) {
-        String queryParam = message.body().getString("query");
-        String fromParam = message.body().getString("from");
-        String toParam = message.body().getString("to");
-
-        String queryToExcecute;
-        if (queryParam != null) {
-            queryToExcecute = this.select(queryParam);
-        } else {
-            queryToExcecute = "select * from " + this.getTableName() + " where status != " + Status.DELETED.getValue();
-        }
-        //adds the limit for pagination
-        if (fromParam != null && toParam != null) {
-            queryToExcecute += " limit " + fromParam + "," + toParam;
-        } else if (toParam != null) {
-            queryToExcecute += " limit " + toParam;
-        }
-        dbClient.query(queryToExcecute, reply -> {
-            if (reply.succeeded()) {
-                message.reply(new JsonArray(reply.result().getRows()));
-            } else {
-                reportQueryError(message, reply.cause());
-            }
-        });
-    }
-
-    /**
      * Execute the query to find all the elements of this database verticle
      *
      * @param message message from the event bus
      */
-    protected void findAllV2(Message<JsonObject> message) {
+    protected void findAll(Message<JsonObject> message) {
         String selectParam = message.body().getString("select");
         String specialJoinParam = message.body().getString("specialJoin");
         String whereParam = message.body().getString("where");
         String joinParam = message.body().getString("joinType");
         String fromParam = message.body().getString("from");
         String toParam = message.body().getString("to");
-
+        String orderBy = message.body().getString("orderBy");
         /*sets the join type to one valid INNER, RIGHT or LEFT*/
         joinParam = this.validateJoinParam(joinParam);
         Set<Join> joinsNeeded = new HashSet<>();
@@ -236,13 +205,17 @@ public abstract class DBVerticle extends AbstractVerticle {
         this.addSpecialJoins(specialJoinParam, joinsNeeded, joinParam);
 
         //create parts of the query
-        String querySelect = this.selectV2(selectParam, joinsNeeded, joinParam);
+        String querySelect = this.select(selectParam, joinsNeeded, joinParam);
         String queryFrom = " FROM " + this.getTableName() + " ";
-        String queryWhere = this.whereV2(whereParam, joinsNeeded, joinParam);
+        String queryWhere = this.where(whereParam, joinsNeeded, joinParam);
         String queryJoin = this.join(joinsNeeded);
 
         /*this is the fina query to excecute*/
         String queryToExcecute = querySelect + queryFrom + queryJoin + queryWhere;
+        //adds order by
+        if (orderBy != null) {
+            queryToExcecute += " ORDER BY " + this.orderBy(orderBy);
+        }
         //adds the limit for pagination
         if (fromParam != null && toParam != null) {
             queryToExcecute += " LIMIT " + fromParam + "," + toParam;
@@ -313,8 +286,7 @@ public abstract class DBVerticle extends AbstractVerticle {
     }
 
     /**
-     * Execute the query "create" generated by the properties of the object in
-     * the message
+     * Execute the query "create" generated by the properties of the object in the message
      *
      * @param message message from the event bus
      */
@@ -339,8 +311,7 @@ public abstract class DBVerticle extends AbstractVerticle {
     }
 
     /**
-     * Execute the query "update" generated by the properties of the object in
-     * the message
+     * Execute the query "update" generated by the properties of the object in the message
      *
      * @param message message from the event bus
      */
@@ -425,92 +396,6 @@ public abstract class DBVerticle extends AbstractVerticle {
     }
 
     /**
-     * Execute the query "select {properties} from " where properties are the
-     * solicited properties in the query param
-     *
-     * @param queryParam string query param, that contains the selection and
-     * filter to query
-     * @return query to excecute in the data base generated with the queryParam
-     */
-    protected String select(String queryParam) {
-        //clausula de selecccion de campos
-        String qSelect = "select ";
-        //set de elementos en las clausulas where
-        Set<String> qWheres = new LinkedHashSet<>();
-        //set de elementos en las clausulas from
-        Set<String> qFroms = new LinkedHashSet<>();
-        qFroms.add(" from " + this.getTableName());
-        //obtener los elementos solicitados
-        boolean addStatusFilter = true;
-        String[] selections = queryParam.split(","); //fields separation
-        for (String selection : selections) {
-            if (selection.contains(".") && !isText(selection)) { //a point means that joins with a table
-                String[] relation = selection.split("\\.");
-                if (relation[0].contains("[")) {
-                    relation = selection.split("].");
-                    String property = relation[1];
-                    String populate = relation[0];
-                    populate = populate.substring(1, populate.length());
-                    String[] fields = populate.split("=");
-                    String localProperty = fields[0];
-                    String[] tableFields = fields[1].split("\\.");
-                    String table = tableFields[0];
-                    String field = tableFields[1];
-
-                    qSelect += table + "." + property + " as " + (table + "_" + property) + ",";
-                    qFroms.add(table);
-                    qWheres.add(this.getTableName() + "." + localProperty + " = " + table + "." + field);
-                } else {
-                    String whereSelection = whereSelection(relation[1]);
-                    if (whereSelection.isEmpty()) {
-                        qSelect += relation[0] + "." + relation[1] + " as " + (relation[0] + "_" + relation[1]) + ",";
-                        qFroms.add(relation[0]);
-                        qWheres.add(this.getTableName() + "." + relation[0] + "_id = " + relation[0] + ".id");
-                    } else {
-                        String[] fieldDecompose = relation[1].split(whereSelection);
-                        qSelect += relation[0] + "." + fieldDecompose[0] + " as " + (relation[0] + "_" + fieldDecompose[0]) + ",";
-                        qFroms.add(relation[0]);
-                        qWheres.add(this.getTableName() + "." + relation[0] + "_id = " + relation[0] + ".id");
-                        qWheres.add(relation[0] + "." + fieldDecompose[0] + " = " + fieldDecompose[1]);
-                    }
-                }
-
-            } else {//if no joins then only validate a where clause
-                String whereSelection = whereSelection(selection);
-                if (whereSelection.isEmpty()) {
-                    qSelect += this.getTableName() + "." + selection + ",";
-                } else {
-                    String[] whereSelections = selection.split(whereSelection);
-                    if (whereSelections[0].equals("status")) { //ignore de default filter in status column
-                        addStatusFilter = false;
-                    }
-                    if (whereSelection.equals("><")) { //if the where clause is a between operation
-                        qSelect += this.getTableName() + "." + whereSelections[0] + ",";
-                        String[] betweenValues = whereSelections[1].split("\\|");
-                        qWheres.add(this.getTableName() + "." + whereSelections[0] + " between " + betweenValues[0] + " and " + betweenValues[1]);
-                    } else {
-                        qSelect += this.getTableName() + "." + whereSelections[0] + ",";
-                        qWheres.add(this.getTableName() + "." + whereSelections[0] + " " + whereSelection + " " + whereSelections[1]);
-                    }
-                }
-            }
-        }
-        qSelect = qSelect.substring(0, qSelect.length() - 1);
-        String from = String.join(",", qFroms);
-        String where = "";
-        if (!qWheres.isEmpty()) {
-            where += " where ";
-            where += String.join(" and ", qWheres);
-            if (addStatusFilter) {
-                where += " and " + this.getTableName() + ".status != " + Status.DELETED.getValue();
-            }
-        } else {
-            where += " where " + this.getTableName() + ".status != " + Status.DELETED.getValue();
-        }
-        return qSelect + from + where;
-    }
-
-    /**
      * Generates the "SELECT" part of the generic query
      *
      * @param selectParam parameter from the URI
@@ -518,7 +403,7 @@ public abstract class DBVerticle extends AbstractVerticle {
      * @param joinType join type
      * @return return the String with all the selects
      */
-    protected String selectV2(String selectParam, Set<Join> joinsNeeded, String joinType) {
+    protected String select(String selectParam, Set<Join> joinsNeeded, String joinType) {
         if (selectParam == null) {
             return "SELECT * ";
         }
@@ -543,22 +428,6 @@ public abstract class DBVerticle extends AbstractVerticle {
             }
         }
         return "SELECT " + String.join(",", fieldsSelect);
-    }
-
-    /**
-     * Validates the query param if it is a string
-     *
-     * @param selection the selecion in the query param
-     * @return true if the selection is a specified string
-     */
-    private boolean isText(final String selection) {
-        String whereSelection = whereSelection(selection);
-        if (!whereSelection.isEmpty()) {
-            String value = selection.split(whereSelection)[1];
-            return (value.startsWith("\"") && value.endsWith("\""))
-                    || (value.startsWith("'") && value.endsWith("'"));
-        }
-        return false;
     }
 
     /**
@@ -596,8 +465,7 @@ public abstract class DBVerticle extends AbstractVerticle {
      * Generates que query and params needed for a generic create operation
      *
      * @param objectBody the object message to create
-     * @return model with the query and needed params to create a register in db
-     * of this ServiceDatabaseVerticle
+     * @return model with the query and needed params to create a register in db of this ServiceDatabaseVerticle
      */
     protected final GenericCreate generateGenericCreate(JsonObject objectBody) {
         String query = "insert into " + getTableName() + "(";
@@ -617,8 +485,7 @@ public abstract class DBVerticle extends AbstractVerticle {
     }
 
     /**
-     * Generates a string raw query to insert in database the object in
-     * objectBody in the table given
+     * Generates a string raw query to insert in database the object in objectBody in the table given
      *
      * @param tableName name of the table to generate the insert
      * @param objectBody object with all the properties to insert
@@ -684,16 +551,14 @@ public abstract class DBVerticle extends AbstractVerticle {
     }
 
     /**
-     * Need to especifie the name of the entity table, to refer in the
-     * properties file, the actions names and queries
+     * Need to especifie the name of the entity table, to refer in the properties file, the actions names and queries
      *
      * @return the name of the table to manage in this verticle
      */
     public abstract String getTableName();
 
     /**
-     * Starts a transaction gettin a connection from the pool and setting auto
-     * generate keys to true, and auto commit to false
+     * Starts a transaction gettin a connection from the pool and setting auto generate keys to true, and auto commit to false
      *
      * @param message message to reply if something goes wrong
      * @param handler the handler called when this operation completes
@@ -718,8 +583,7 @@ public abstract class DBVerticle extends AbstractVerticle {
     }
 
     /**
-     * Roll back the actual connection in transaction with a generic invalid
-     * exception message type to the messager
+     * Roll back the actual connection in transaction with a generic invalid exception message type to the messager
      *
      * @param con connection in actual transaction
      * @param ex exception with the field and message to display
@@ -740,8 +604,7 @@ public abstract class DBVerticle extends AbstractVerticle {
     }
 
     /**
-     * Roll back the actual connection in transaction with a generic invalid
-     * exception message type to the messager
+     * Roll back the actual connection in transaction with a generic invalid exception message type to the messager
      *
      * @param con connection in actual transaction
      * @param t cause of the fail in an operation in the transaction
@@ -755,8 +618,7 @@ public abstract class DBVerticle extends AbstractVerticle {
     }
 
     /**
-     * Commit the actual transaction and replays to the sender the object
-     * provided
+     * Commit the actual transaction and replays to the sender the object provided
      *
      * @param con connection in actual transaction
      * @param message message of the sender
@@ -784,8 +646,7 @@ public abstract class DBVerticle extends AbstractVerticle {
     }
 
     /**
-     * This method is used to add to the set of joins the specified join in the
-     * parameter of the URI
+     * This method is used to add to the set of joins the specified join in the parameter of the URI
      *
      * @param specialJoinParam parameter from the URI
      * @param joinsNeeded joins needed
@@ -796,7 +657,7 @@ public abstract class DBVerticle extends AbstractVerticle {
             if (!specialJoinParam.isEmpty()) {
                 String[] specialJoins = specialJoinParam.split(",");
                 for (String specialJoin : specialJoins) {
-                    //[locaField=table.field].alias
+                    //[localField=table.field].alias
                     String[] parts = specialJoin.split("]");
                     String alias = parts[1];
                     String relation = parts[0].substring(1, parts[0].length());
@@ -819,42 +680,29 @@ public abstract class DBVerticle extends AbstractVerticle {
      * @param joinParam join type
      * @return the String with the WHERE part of the query
      */
-    private String whereV2(String whereParam, Set<Join> joinsNeeded, final String joinParam) {
+    private String where(String whereParam, Set<Join> joinsNeeded, final String joinParam) {
         List<String> whereParts = new ArrayList<>();
         if (whereParam != null) {
             if (!whereParam.isEmpty()) {
                 String[] wheres = whereParam.split(",");
                 for (String where : wheres) {
-                    if (where.contains(".")) {
-                        //table.field>20
-                        String comparator = this.whereSelection(where);
-                        if (!comparator.isEmpty()) {
-                            String[] parts = where.split(comparator);
+                    String comparator = this.whereSelection(where);
+                    if (!comparator.isEmpty()) {
+                        String[] parts = where.split(comparator);
+                        if (where.contains(".")) {//table.field>20                                                                           
                             String[] tablePart = parts[0].split("\\.");
                             String table = tablePart[0];
-                            if (!table.equals(this.getTableName())) { //other table and needs join
-                                //check if the table is a special join
+                            if (!table.equals(this.getTableName())) { //other table and needs join                                
                                 boolean exists = joinsNeeded.stream().anyMatch(j -> j.getAlias().equals(table));
                                 if (!exists) {
                                     Join join = new Join(joinParam, table + "_id", table, table);
                                     joinsNeeded.add(join);
                                 }
-                                whereParts.add(parts[0] + " " + comparator + " " + parts[1]);
-                            } else {
-                                whereParts.add(parts[0] + " " + comparator + " " + parts[1]);
                             }
-
                         }
-                    } else {
-                        //id=10
-                        String comparator = this.whereSelection(where);
-                        if (!comparator.isEmpty()) {
-                            String[] parts = where.split(comparator);
-                            whereParts.add(parts[0] + " " + comparator + " " + parts[1]);
-                        }
+                        this.addWherePart(whereParts, comparator, parts);
                     }
                 }
-
             }
         }
         if (whereParts.isEmpty()) {
@@ -862,6 +710,28 @@ public abstract class DBVerticle extends AbstractVerticle {
         } else {
             return " WHERE " + String.join(" AND ", whereParts);
         }
+    }
+
+    /**
+     * Generates the order by part of a sql query
+     *
+     * @param orderBy
+     * @return
+     */
+    private String orderBy(String orderBy) {
+        StringBuilder orderByQuery = new StringBuilder();
+        String[] fields = orderBy.split(",");
+        for (String field : fields) {
+            if (field.contains("|")) {
+                field = field.replace('|', ' ');
+                orderByQuery.append(field)
+                        .append(", ");
+            } else {
+                orderByQuery.append(field).append(", ");
+            }
+        }
+        String finalQuery = orderByQuery.toString();
+        return finalQuery.substring(0, finalQuery.length() - 2);
     }
 
     /**
@@ -894,6 +764,26 @@ public abstract class DBVerticle extends AbstractVerticle {
                     }
                 })
                 .collect(toList()));
+    }
+
+    /**
+     * Adds the where part to the sql query, evaluating special conditions
+     *
+     * @param whereParts list of where parts to add
+     * @param comparator comparator string (=, !=, >=, etc)
+     * @param parts array with table and value parts
+     */
+    private void addWherePart(List<String> whereParts, String comparator, String[] parts) {
+        String table = parts[0];
+        String value = parts[1];
+        if (value.equals("null")) {
+            if (comparator.equals("=")) {
+                comparator = "is";
+            } else if (comparator.equals("!=")) {
+                comparator = "is not";
+            }
+        }
+        whereParts.add(table + " " + comparator + " " + value);
     }
 
     /**

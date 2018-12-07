@@ -1,8 +1,13 @@
 {
-    "url": "jdbc:mysql://localhost:3306/database",
+    "url": "jdbc:mysql://localhost:3306/example_db",
     "driver_class": "com.mysql.jdbc.Driver",
-    "user": "root",
-    "password": "password",
-    "max_pool_size": 100,
+    "user": "mysql",
+    "password": "2424",
+    "max_pool_size": 15,
+    "min_pool_size": 3,
+    "initial_pool_size": 3,
+    "max_statements": 3,
+    "max_statements_per_connection": 0,
+    "max_idle_time": 7200,
     "httpServerPort": 8480
 }

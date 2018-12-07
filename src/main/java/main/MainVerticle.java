@@ -59,6 +59,7 @@ public class MainVerticle extends AbstractVerticle {
         initializeVerticle(new PersonDBV(), new PersonSV(), config);
         initializeVerticle(new PetDBV(), new PetSV(), config);
         initializeVerticle(new FamiliarDBV(), new FamiliarSV(), config);
+        
     }
 
     /**
@@ -118,7 +119,7 @@ public class MainVerticle extends AbstractVerticle {
      * @throws FileNotFoundException if the file does not exist
      * @throws IOException if an error occuer while reading
      */
-    private JsonObject loadConfigToJsonObject(final String filePath) throws IOException {
+    private JsonObject loadConfigToJsonObject(final String filePath) throws IOException {        
         JsonObject result;
         try {
             BufferedReader br = new BufferedReader(new FileReader(filePath));

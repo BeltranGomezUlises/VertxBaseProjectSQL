@@ -13,8 +13,6 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
-import io.vertx.core.json.Json;
-import models.ModelSesion;
 
 /**
  *
@@ -24,10 +22,9 @@ public class UtilsJWT {
 
     private static final String STRING_KEY = "k$5*t;ht^L$_g76k'H6LSas\"n`6xrE=)?)+g!~0r198(\"D^|Hl'~+SvuMm'P_([";
 
-    public static String generateSessionToken(final int userId, final int branchofficeId) throws JsonProcessingException {
+    public static String generateSessionToken(final int userId) throws JsonProcessingException {
         JwtBuilder builder = Jwts.builder();
-        ModelSesion modelSesion = new ModelSesion(1, 1);
-        builder.setSubject(Json.encode(modelSesion));
+        builder.setSubject(String.valueOf(userId));
         return builder.signWith(SignatureAlgorithm.HS512, STRING_KEY).compact();
     }
 
@@ -46,7 +43,11 @@ public class UtilsJWT {
         } catch (ExpiredJwtException | MalformedJwtException | SignatureException
                 | UnsupportedJwtException | IllegalArgumentException | NullPointerException e) {
             return false;
-        }
+        }        
     }
 
+    
+    public static void main(String[] args) throws JsonProcessingException {
+        System.out.println(generateSessionToken(1));
+    }
 }

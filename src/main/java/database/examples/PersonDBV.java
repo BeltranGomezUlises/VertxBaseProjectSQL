@@ -13,7 +13,6 @@ import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 import static service.commons.Constants.ACTION;
-import static service.commons.Constants.CREATED_BY;
 
 /**
  *

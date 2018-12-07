@@ -6,14 +6,14 @@
 	},
 	"item": [
 		{
-			"_postman_id": "92736016-bd35-4b65-8f76-cc09b548fa60",
+			"_postman_id": "0c369078-c029-4946-b2ea-48348aae832e",
 			"name": "/persons",
 			"request": {
 				"method": "GET",
 				"header": [
 					{
 						"key": "Authorization",
-						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjoxLFwic3VjdXJzYWxJZFwiOjF9In0.drlDxDc8qHbzJkwxVS5NVehbiRXFykWKrGIEfABp4jdpbWbQcllAKyD2XSmF-RqAht5B_Z-OhXiiBtiYFnoxRw"
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiaXNzIjoiYXV0aCBzeXN0ZW0iLCJpYXQiOjE1NDA5MjMzNjQsImV4cCI6MTU0MDkyNjk2NH0.XfKXYKZere7lvzmQ7ovMFHdlz0gTg1FqCPQTyIcvAjplf3BDLMZIOc2T7ErKnp7oS3NC9wjWauqTwAv5PHOUcA"
 					}
 				],
 				"body": {},
@@ -32,14 +32,14 @@
 			"response": []
 		},
 		{
-			"_postman_id": "a409e992-c7f5-4a1d-b4d1-aa1118a8ceed",
+			"_postman_id": "ee1dc723-09fe-44fd-b552-9ef517aad573",
 			"name": "/persons",
 			"request": {
 				"method": "POST",
 				"header": [
 					{
 						"key": "Authorization",
-						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjoxLFwic3VjdXJzYWxJZFwiOjF9In0.drlDxDc8qHbzJkwxVS5NVehbiRXFykWKrGIEfABp4jdpbWbQcllAKyD2XSmF-RqAht5B_Z-OhXiiBtiYFnoxRw"
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiaXNzIjoiYXV0aCBzeXN0ZW0iLCJpYXQiOjE1NDA5MjMzNjQsImV4cCI6MTU0MDkyNjk2NH0.XfKXYKZere7lvzmQ7ovMFHdlz0gTg1FqCPQTyIcvAjplf3BDLMZIOc2T7ErKnp7oS3NC9wjWauqTwAv5PHOUcA"
 					},
 					{
 						"key": "Content-Type",
@@ -65,7 +65,7 @@
 			"response": []
 		},
 		{
-			"_postman_id": "02078f34-08b2-45a2-bdea-f9f089944cb3",
+			"_postman_id": "95d59eb1-d74b-48d8-8d5d-066732090fbf",
 			"name": "/persons",
 			"request": {
 				"method": "DELETE",
@@ -92,7 +92,7 @@
 			"response": []
 		},
 		{
-			"_postman_id": "341e9fee-44bc-4a6d-9566-150a475a6b26",
+			"_postman_id": "506bb3fc-d6ed-4305-90df-4f11b9ac07bc",
 			"name": "/persons",
 			"request": {
 				"method": "PUT",
@@ -125,7 +125,7 @@
 			"response": []
 		},
 		{
-			"_postman_id": "56af1826-f7c0-4d3c-b3f8-db46c95a70fc",
+			"_postman_id": "f658a240-8102-4d00-995e-25f8f05c23f7",
 			"name": "/persons?query",
 			"request": {
 				"method": "GET",
@@ -157,7 +157,7 @@
 			"response": []
 		},
 		{
-			"_postman_id": "7e2117fc-9414-4987-b111-5d8186410a8e",
+			"_postman_id": "b271046b-59a0-486e-8585-f46c0fc2e339",
 			"name": "/persons?query&from&to",
 			"request": {
 				"method": "GET",
@@ -197,7 +197,7 @@
 			"response": []
 		},
 		{
-			"_postman_id": "c67044c7-c742-422a-9690-1efe77c0a8c0",
+			"_postman_id": "a028546e-188e-4b75-816e-26a862437510",
 			"name": "/pets",
 			"request": {
 				"method": "POST",
@@ -230,7 +230,40 @@
 			"response": []
 		},
 		{
-			"_postman_id": "61de3d1c-9c40-4caf-8cb3-8ef723c0c675",
+			"_postman_id": "e5864297-51a7-4058-90de-57ea8ab8768e",
+			"name": "/familiars",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiaXNzIjoiYXV0aCBzeXN0ZW0iLCJpYXQiOjE1MzQ3MTU4MzksImV4cCI6MTUzNDcxOTQzOX0.LQrapmBehOuZLoh6SG1eQrjF5xBxXyBpfgfkfYgrv_Jbtd5_gPlhzFoKxiquU2edDrgsUIKBnT9PFuNyZs1aqQ"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\":\"last person\",\n\t\"person_id\":10,\n\t\"other_person_id\":2\n}"
+				},
+				"url": {
+					"raw": "localhost:8480/familiars",
+					"host": [
+						"localhost"
+					],
+					"port": "8480",
+					"path": [
+						"familiars"
+					]
+				},
+				"description": "crud example"
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "1955e920-fc07-4030-bcc0-9e4e0fb41232",
 			"name": "/pets?query",
 			"request": {
 				"method": "GET",
@@ -269,7 +302,7 @@
 			"response": []
 		},
 		{
-			"_postman_id": "740519be-47ae-417e-8b17-fbaa33e434af",
+			"_postman_id": "8963e48e-27be-436e-b332-776dddb0374c",
 			"name": "/person/action/register",
 			"request": {
 				"method": "POST",
@@ -297,6 +330,142 @@
 						"persons",
 						"action",
 						"register"
+					]
+				},
+				"description": "crud example"
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "781d3d87-6b8d-4188-ab3a-ff41b55d87f3",
+			"name": "/v2 example select and where",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjoxLFwic3VjdXJzYWxJZFwiOjF9In0.drlDxDc8qHbzJkwxVS5NVehbiRXFykWKrGIEfABp4jdpbWbQcllAKyD2XSmF-RqAht5B_Z-OhXiiBtiYFnoxRw"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\":\"person\",\n\t\"email\":\"myemail@mail.com\",\n\t\"phone\":\"6672118468\",\n\t\"pets\":[\n\t\t{\n\t\t\t\"name\":\"firulais\"\n\t\t},\n\t\t{\n\t\t\t\"name\":\"otro firulis\"\n\t\t},\n\t\t{\n\t\t\t\"name\":\"ultimo firulais\"\n\t\t}\n\t]\n}"
+				},
+				"url": {
+					"raw": "localhost:8480/pets/v2?select=id,name,person.name,person.phone&where=person.phone='6672118468',pet.status!=3",
+					"host": [
+						"localhost"
+					],
+					"port": "8480",
+					"path": [
+						"pets",
+						"v2"
+					],
+					"query": [
+						{
+							"key": "select",
+							"value": "id,name,person.name,person.phone"
+						},
+						{
+							"key": "where",
+							"value": "person.phone='6672118468',pet.status!=3"
+						}
+					]
+				},
+				"description": "crud example"
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "527a4d74-17ec-456b-8181-0b89680ae942",
+			"name": "/v2 example special join",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiaXNzIjoiYXV0aCBzeXN0ZW0iLCJpYXQiOjE1MzQ3MTU4MzksImV4cCI6MTUzNDcxOTQzOX0.LQrapmBehOuZLoh6SG1eQrjF5xBxXyBpfgfkfYgrv_Jbtd5_gPlhzFoKxiquU2edDrgsUIKBnT9PFuNyZs1aqQ"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:8480/familiars/v2?select=id,name,status,person.name,person.id,other.name,other.id&specialJoin=[other_person_id=person]other",
+					"host": [
+						"localhost"
+					],
+					"port": "8480",
+					"path": [
+						"familiars",
+						"v2"
+					],
+					"query": [
+						{
+							"key": "select",
+							"value": "id,name,status,person.name,person.id,other.name,other.id"
+						},
+						{
+							"key": "specialJoin",
+							"value": "[other_person_id=person]other"
+						}
+					]
+				},
+				"description": "crud example"
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "848d41dc-fcc4-4103-9804-ac36fc20b446",
+			"name": "/v2 example join type",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiaXNzIjoiYXV0aCBzeXN0ZW0iLCJpYXQiOjE1MzQ3MTU4MzksImV4cCI6MTUzNDcxOTQzOX0.LQrapmBehOuZLoh6SG1eQrjF5xBxXyBpfgfkfYgrv_Jbtd5_gPlhzFoKxiquU2edDrgsUIKBnT9PFuNyZs1aqQ"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\":\"person\",\n\t\"email\":\"myemail@mail.com\",\n\t\"phone\":\"6672118468\",\n\t\"pets\":[\n\t\t{\n\t\t\t\"name\":\"firulais\"\n\t\t},\n\t\t{\n\t\t\t\"name\":\"otro firulis\"\n\t\t},\n\t\t{\n\t\t\t\"name\":\"ultimo firulais\"\n\t\t}\n\t]\n}"
+				},
+				"url": {
+					"raw": "localhost:8480/familiars/v2?select=id,name,status,person.name,person.id,other.name,other.id&specialJoin=[other_person_id=person]other&joinType=left",
+					"host": [
+						"localhost"
+					],
+					"port": "8480",
+					"path": [
+						"familiars",
+						"v2"
+					],
+					"query": [
+						{
+							"key": "select",
+							"value": "id,name,status,person.name,person.id,other.name,other.id"
+						},
+						{
+							"key": "specialJoin",
+							"value": "[other_person_id=person]other"
+						},
+						{
+							"key": "joinType",
+							"value": "left"
+						}
 					]
 				},
 				"description": "crud example"

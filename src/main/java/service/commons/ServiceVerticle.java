@@ -46,16 +46,14 @@ public abstract class ServiceVerticle extends AbstractVerticle {
     protected final Router router = Router.router(vertx);
 
     /**
-     * Need to specifie the address of the verticles in the event bus with the
-     * access of the db that contains the table
+     * Need to specifie the address of the verticles in the event bus with the access of the db that contains the table
      *
      * @return the name of the registered DBVerticle to work with
      */
     protected abstract String getDBAddress();
 
     /**
-     * Need to especifie the endpoint domain for this verticles begining with
-     * "/", ex: return "/example";
+     * Need to especifie the endpoint domain for this verticles begining with "/", ex: return "/example";
      *
      * @return the name to register the verticle in the main router
      */
@@ -65,7 +63,6 @@ public abstract class ServiceVerticle extends AbstractVerticle {
     public void start(Future<Void> startFuture) throws Exception {
         HttpServer server = vertx.createHttpServer();
         router.get("/").handler(this::findAll);
-        router.get("/v2").handler(this::findAllV2);
         router.get("/:id").handler(this::findById);
         router.get("/count").handler(this::count);
         router.get("/count/perPage/:num").handler(this::countPerPage);
@@ -93,90 +90,59 @@ public abstract class ServiceVerticle extends AbstractVerticle {
     }
 
     /**
-     * Sends a message to the verticle registered with DBAddress especified in
-     * this instance the action of "findAll"
+     * Sends a message to the verticle registered with DBAddress especified in this instance the action of "findAll"
      *
      * @param context the routing context running in the request
      */
     protected void findAll(RoutingContext context) {
-        String jwt = context.request().getHeader("Authorization");
-        if (UtilsJWT.isTokenValid(jwt)) {
-            JsonObject message = new JsonObject()
-                    .put("query", context.request().getParam("query"))
-                    .put("from", context.request().getParam("from"))
-                    .put("to", context.request().getParam("to"));
-            DeliveryOptions options = new DeliveryOptions().addHeader(ACTION, FIND_ALL.name());
-            vertx.eventBus().send(this.getDBAddress(), message, options, reply -> {
-                this.genericResponse(context, reply, "Found");
-            });
-        } else {
-            responseInvalidToken(context);
-        }
-    }
-
-    /**
-     * Sends a message to the verticle registered with DBAddress especified in
-     * this instance the action of "findAll"
-     *
-     * @param context the routing context running in the request
-     */
-    protected void findAllV2(RoutingContext context) {
-        this.validateToken(context, userId -> {
+        this.validateToken(context, __ -> {
             JsonObject message = new JsonObject()
                     .put("select", context.request().getParam("select"))
                     .put("specialJoin", context.request().getParam("specialJoin"))
                     .put("where", context.request().getParam("where"))
                     .put("joinType", context.request().getParam("joinType"))
+                    .put("orderBy", context.request().getParam("orderBy"))
                     .put("from", context.request().getParam("from"))
                     .put("to", context.request().getParam("to"));
             vertx.eventBus().send(
                     this.getDBAddress(),
                     message,
-                    options(FIND_ALL_V2.name()),
+                    options(FIND_ALL.name()),
                     reply -> {
                         this.genericResponse(context, reply, "Found");
                     });
         });
-
     }
 
     /**
-     * Sends a message to the verticle registered with DBAddress especified in
-     * this instance the action of "findById"
+     * Sends a message to the verticle registered with DBAddress especified in this instance the action of "findById"
      *
      * @param context the routing context running in the request
      */
     protected void findById(RoutingContext context) {
-        String jwt = context.request().getHeader("Authorization");
-        if (UtilsJWT.isTokenValid(jwt)) {
+        this.validateToken(context, __ -> {
             JsonObject message = new JsonObject().put("id", Integer.valueOf(context.request().getParam("id")));
             DeliveryOptions options = new DeliveryOptions().addHeader(ACTION, FIND_BY_ID.name());
             vertx.eventBus().send(this.getDBAddress(), message, options, reply -> {
                 this.genericResponse(context, reply, "Found");
             });
-        } else {
-            responseInvalidToken(context);
-        }
+        });
     }
 
     /**
-     * Sends a message to the verticle registered with DBAddress especified in
-     * this instance the action of "update"
+     * Sends a message to the verticle registered with DBAddress especified in this instance the action of "update"
      *
      * @param context the routing context running in the request
      */
     protected void update(RoutingContext context) {
-        String jwt = context.request().getHeader("Authorization");
-        if (UtilsJWT.isTokenValid(jwt)) {
+        this.validateToken(context, userId -> {
             if (this.isValidUpdateData(context)) {
                 DeliveryOptions options = new DeliveryOptions().addHeader(ACTION, UPDATE.name());
                 JsonObject reqBody = context.getBodyAsJson();
-                //clean properties if exist any of this
                 reqBody.remove("created_at");
                 reqBody.remove("created_by");
-                //set the user requesting to update
                 reqBody.put("updated_at", UtilsDate.sdfDataBase(new Date()));
-                reqBody.put("updated_by", UtilsJWT.getUserIdFrom(jwt));
+                reqBody.put("updated_by", userId);
                 vertx.eventBus().send(this.getDBAddress(), reqBody, options, reply -> {
                     if (reply.succeeded()) {
                         MultiMap headers = reply.result().headers();
@@ -190,31 +156,23 @@ public abstract class ServiceVerticle extends AbstractVerticle {
                     }
                 });
             }
-        } else {
-            responseInvalidToken(context);
-        }
+        });
     }
 
     /**
-     * Sends a message to the verticle registered with DBAddress especified in
-     * this instance the action of "create"
+     * Sends a message to the verticle registered with DBAddress especified in this instance the action of "create"
      *
      * @param context the routing context running in the request
      */
     protected void create(RoutingContext context) {
-        String jwt = context.request().getHeader("Authorization");
-        if (UtilsJWT.isTokenValid(jwt)) {
+        this.validateToken(context, userId -> {
             if (this.isValidCreateData(context)) {
                 DeliveryOptions options = new DeliveryOptions().addHeader(ACTION, CREATE.name());
-
                 JsonObject reqBody = context.getBodyAsJson();
-                //clean properties if exist any of this
                 reqBody.remove("created_at");
                 reqBody.remove("updated_at");
                 reqBody.remove("updated_by");
-                //set the user requesting to create
-                reqBody.put("created_by", UtilsJWT.getUserIdFrom(jwt));
-
+                reqBody.put("created_by", userId);
                 vertx.eventBus().send(this.getDBAddress(), reqBody, options, reply -> {
                     if (reply.succeeded()) {
                         if (reply.result().headers().contains(ErrorCodes.DB_ERROR.toString())) {
@@ -227,50 +185,46 @@ public abstract class ServiceVerticle extends AbstractVerticle {
                     }
                 });
             }
-        } else {
-            responseInvalidToken(context);
-        }
+        });
     }
 
     /**
-     * Sends a message to the verticle registered with DBAddress especified in
-     * this instance the action of "deleteById"
+     * Sends a message to the verticle registered with DBAddress especified in this instance the action of "deleteById"
      *
      * @param context the routing context running in the request
      */
     protected void deleteById(RoutingContext context) {
-        String jwt = context.request().getHeader("Authorization");
-        if (UtilsJWT.isTokenValid(jwt)) {
-            JsonObject reqBody = new JsonObject().put("id", Integer.valueOf(context.request().getParam("id")));
-            DeliveryOptions options = new DeliveryOptions().addHeader(ACTION, DELETE_BY_ID.name());
-            vertx.eventBus().send(this.getDBAddress(), reqBody, options,
-                    reply -> {
-                        if (reply.succeeded()) {
-                            MultiMap headers = reply.result().headers();
-                            if (headers.contains(ErrorCodes.DB_ERROR.toString())) {
-                                responseWarning(context, headers.get(ErrorCodes.DB_ERROR.name()));
+        this.validateToken(context, __ -> {
+            try {
+                JsonObject reqBody = new JsonObject().put("id", Integer.valueOf(context.request().getParam("id")));
+                DeliveryOptions options = new DeliveryOptions().addHeader(ACTION, DELETE_BY_ID.name());
+                vertx.eventBus().send(this.getDBAddress(), reqBody, options,
+                        reply -> {
+                            if (reply.succeeded()) {
+                                MultiMap headers = reply.result().headers();
+                                if (headers.contains(ErrorCodes.DB_ERROR.toString())) {
+                                    responseWarning(context, headers.get(ErrorCodes.DB_ERROR.name()));
+                                } else {
+                                    responseOk(context, "Deleted");
+                                }
                             } else {
-                                responseOk(context, "Deleted");
+                                responseError(context, UNEXPECTED_ERROR, reply.cause().getMessage());
                             }
-                        } else {
-                            responseError(context, UNEXPECTED_ERROR, reply.cause().getMessage());
                         }
-                    }
-            );
-        } else {
-            responseWarning(context, "Out of session", "Sessión json web token is invalid");
-        }
+                );
+            } catch (ClassCastException e) {
+                UtilsResponse.responsePropertyValue(context, new UtilsValidation.PropertyValueException("id", "Is not an integer"));
+            }
+        });
     }
 
     /**
-     * Sends a message to the verticle registered with DBAddress especified in
-     * this instance the action of "deleteById"
+     * Sends a message to the verticle registered with DBAddress especified in this instance the action of "deleteById"
      *
      * @param context the routing context running in the request
      */
     protected void count(RoutingContext context) {
-        String jwt = context.request().getHeader("Authorization");
-        if (UtilsJWT.isTokenValid(jwt)) {
+        this.validateToken(context, userId -> {
             DeliveryOptions options = new DeliveryOptions().addHeader(ACTION, COUNT.name());
             vertx.eventBus().send(this.getDBAddress(), null, options,
                     reply -> {
@@ -286,20 +240,16 @@ public abstract class ServiceVerticle extends AbstractVerticle {
                         }
                     }
             );
-        } else {
-            responseWarning(context, "Out of session", "Session json web token is invalid");
-        }
+        });
     }
 
     /**
-     * Sends a message to the verticle registered with DBAddress especified in
-     * this instance the action of "deleteById"
+     * Sends a message to the verticle registered with DBAddress especified in this instance the action of "deleteById"
      *
      * @param context the routing context running in the request
      */
     protected void countPerPage(RoutingContext context) {
-        String jwt = context.request().getHeader("Authorization");
-        if (UtilsJWT.isTokenValid(jwt)) {
+        this.validateToken(context, userId -> {
             DeliveryOptions options = new DeliveryOptions().addHeader(ACTION, COUNT.name());
             vertx.eventBus().send(this.getDBAddress(), null, options,
                     (AsyncResult<Message<JsonObject>> reply) -> {
@@ -341,14 +291,12 @@ public abstract class ServiceVerticle extends AbstractVerticle {
                         }
                     }
             );
-        } else {
-            responseWarning(context, "Out of session", "Session json web token is invalid");
-        }
+        });
+
     }
 
     /**
-     * Verifies is the data of the request is valid to create a record of this
-     * entity
+     * Verifies is the data of the request is valid to create a record of this entity
      *
      * @param context context of the request
      * @return true if the data is valid, false othrewise
@@ -362,8 +310,7 @@ public abstract class ServiceVerticle extends AbstractVerticle {
     }
 
     /**
-     * Verifies is the data of the request is valid to update a record of this
-     * entity
+     * Verifies is the data of the request is valid to update a record of this entity
      *
      * @param context context of the request
      * @return true if the data is valid, false othrewise
@@ -419,10 +366,10 @@ public abstract class ServiceVerticle extends AbstractVerticle {
      * @param context context from the http request
      * @param handler handler to procced if access token is valid
      */
-    protected void validateToken(RoutingContext context, Handler<Void> handler) {
+    protected void validateToken(RoutingContext context, Handler<Integer> handler) {
         String token = context.request().headers().get(AUTHORIZATION);
         if (UtilsJWT.isTokenValid(token)) {
-            handler.handle(null);
+            handler.handle(UtilsJWT.getUserIdFrom(token));
         } else {
             UtilsResponse.responseInvalidToken(context);
         }
